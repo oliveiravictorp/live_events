@@ -1,0 +1,49 @@
+<.header>
+  Listing Members
+  <:actions>
+    <.link patch={~p"/members/#{@event.id}/new"}>
+      <.button>New Member</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="members"
+  rows={@streams.members}
+  row_click={fn {_id, member} -> JS.navigate(~p"/members/#{@event.id}/#{member}") end}
+>
+  <:col :let={{_id, member}} label="Name"><%= member.name %></:col>
+  <:action :let={{_id, member}}>
+    <div class="sr-only">
+      <.link navigate={~p"/members/#{member}"}>Show</.link>
+    </div>
+    <.link patch={~p"/members/#{@event.id}/#{member}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, member}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: member.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.back navigate={~p"/"}>Back to events</.back>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="member-modal"
+  show
+  on_cancel={JS.patch(~p"/members/#{@event.id}")}
+>
+  <.live_component
+    module={LiveEventsWeb.MemberLive.FormComponent}
+    id={@member.id || :new}
+    title={@page_title}
+    action={@live_action}
+    member={@member}
+    event_id={@event.id}
+    patch={~p"/members/#{@event.id}"}
+  />
+</.modal>
